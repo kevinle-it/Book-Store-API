@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BookStoreAPI.Migrations.Sqlite
 {
     [DbContext(typeof(UserContext))]
-    [Migration("20220717223606_InitialUserDb")]
+    [Migration("20220719202412_InitialUserDb")]
     partial class InitialUserDb
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -42,6 +42,9 @@ namespace BookStoreAPI.Migrations.Sqlite
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("FullName")
+                        .HasColumnType("TEXT");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("INTEGER");

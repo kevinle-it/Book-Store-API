@@ -45,7 +45,8 @@ namespace BookStoreAPI.Controllers
                 if (existingUser == null)
                 {
                     User user = new User();
-                    user.UserName = model.UserName;
+                    user.FullName = model.FullName;
+                    user.UserName = model.Email;
                     user.Email = model.Email;
                     user.PhoneNumber = model.PhoneNumber;
                     user.Address = model.Address;

@@ -5,7 +5,8 @@ namespace BookStoreAPI.Dto
     public class SignUpDto
     {
         [Required]
-        public string UserName { get; set; }
+        [DataType(DataType.Text)]
+        public string FullName { get; set; }
 
         [Required]
         [DataType(DataType.EmailAddress)]
@@ -16,11 +17,11 @@ namespace BookStoreAPI.Dto
         [DataType(DataType.Password)]
         public string Password { get; set; }
 
-        [Required]
-        [StringLength(255, ErrorMessage = "Must be between 5 and 255 characters", MinimumLength = 5)]
-        [DataType(DataType.Password)]
-        [Compare("Password")]
-        public string ConfirmPassword { get; set; }
+        //[Required]
+        //[StringLength(255, ErrorMessage = "Must be between 5 and 255 characters", MinimumLength = 5)]
+        //[DataType(DataType.Password)]
+        //[Compare("Password")]
+        //public string ConfirmPassword { get; set; }
 
         [DataType(DataType.PhoneNumber)]
         public string PhoneNumber { get; set; }

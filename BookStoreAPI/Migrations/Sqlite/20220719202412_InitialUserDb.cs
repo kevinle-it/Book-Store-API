@@ -26,6 +26,7 @@ namespace BookStoreAPI.Migrations.Sqlite
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "TEXT", nullable: false),
+                    FullName = table.Column<string>(type: "TEXT", nullable: true),
                     Address = table.Column<string>(type: "TEXT", nullable: true),
                     City = table.Column<string>(type: "TEXT", nullable: true),
                     State = table.Column<string>(type: "TEXT", nullable: true),
