@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using BookStoreAPI.Data.Entities;
 using BookStoreAPI.Dto;
+using System.Net;
 
 namespace BookStoreAPI.Controllers
 {
@@ -57,6 +58,16 @@ namespace BookStoreAPI.Controllers
                     if (result.Succeeded)
                     {
                         return Created("", model);
+                    }
+                    else
+                    {
+                        string errors = "";
+                        foreach (IdentityError e in result.Errors)
+                        {
+                            errors += $"{e.Description} ";
+                        }
+                        errors = errors.TrimEnd();
+                        return Problem(detail: errors, statusCode: (int) HttpStatusCode.BadRequest);
                     }
                 }
 
