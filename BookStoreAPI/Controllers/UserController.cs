@@ -13,6 +13,7 @@ using System.Linq;
 using BookStoreAPI.Data.Entities;
 using BookStoreAPI.Dto;
 using System.Net;
+using BookStoreAPI.Helpers;
 
 namespace BookStoreAPI.Controllers
 {
@@ -58,7 +59,17 @@ namespace BookStoreAPI.Controllers
 
                     if (result.Succeeded)
                     {
-                        return Created("", model);
+                        Response.Headers.Add("Authorization", JWTHelper.generateToken(user, this.config));
+                        return Ok(new
+                        {
+                            fullName = user.FullName,
+                            email = user.Email,
+                            phoneNumber = user.PhoneNumber,
+                            address = user.Address,
+                            city = user.City,
+                            state = user.State,
+                            postalCode = user.PostalCode
+                        });
                     }
                     else
                     {
@@ -70,6 +81,10 @@ namespace BookStoreAPI.Controllers
                         errors = errors.TrimEnd();
                         return Problem(detail: errors, statusCode: (int) HttpStatusCode.BadRequest);
                     }
+                }
+                else
+                {
+                    return Problem(detail: "User already exists.", statusCode: (int) HttpStatusCode.Conflict);
                 }
 
             }
@@ -88,33 +103,26 @@ namespace BookStoreAPI.Controllers
                     var passwordCheck = await this.signInManager.CheckPasswordSignInAsync(user, model.Password, false);
                     if (passwordCheck.Succeeded)
                     {
-                        var claims = new List<Claim>
-                        {
-                            new Claim(JwtRegisteredClaimNames.Sub, user.Email),
-                            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                            new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName)
-                        };
-                        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(this.config["Tokens:Key"]));
-                        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-                        var token = new JwtSecurityToken(
-                            this.config["Tokens:Issuer"],
-                            this.config["Tokens:Audience"],
-                            claims,
-                            expires: DateTime.UtcNow.AddHours(3),
-                            signingCredentials: credentials
-                            );
-
+                        Response.Headers.Add("Authorization", JWTHelper.generateToken(user, this.config));
                         return Ok(new
                         {
-                            token = new JwtSecurityTokenHandler().WriteToken(token),
-                            expiration = token.ValidTo
+                            fullName = user.FullName,
+                            email = user.Email,
+                            phoneNumber = user.PhoneNumber,
+                            address = user.Address,
+                            city = user.City,
+                            state = user.State,
+                            postalCode = user.PostalCode
                         });
                     }
-
+                    else
+                    {
+                        return Unauthorized("Invalid password.");
+                    }
                 }
                 else
                 {
-                    return Unauthorized();
+                    return NotFound("User not exist.");
                 }
             }
 

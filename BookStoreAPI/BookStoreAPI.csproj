@@ -18,5 +18,9 @@
 
   <ItemGroup>
     <None Remove="Microsoft.EntityFrameworkCore.Sqlite" />
+    <None Remove="Helpers\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Helpers\" />
   </ItemGroup>
 </Project>

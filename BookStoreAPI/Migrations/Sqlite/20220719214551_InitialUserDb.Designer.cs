@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BookStoreAPI.Migrations.Sqlite
 {
     [DbContext(typeof(UserContext))]
-    [Migration("20220719202412_InitialUserDb")]
+    [Migration("20220719214551_InitialUserDb")]
     partial class InitialUserDb
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
