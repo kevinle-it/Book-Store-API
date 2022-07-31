@@ -4,10 +4,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BookStoreAPI.Data
 {
-    public class UserContext : IdentityDbContext<User>
+    public class BookStoreContext : IdentityDbContext<User>
     {
-        public UserContext(DbContextOptions<UserContext> options) : base(options)
+        public BookStoreContext(DbContextOptions<BookStoreContext> options) : base(options)
         {
         }
+
+        public DbSet<Book> Books { get; set; }
     }
 }

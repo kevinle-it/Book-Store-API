@@ -40,9 +40,9 @@ namespace BookStoreAPI
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "BookStoreAPI", Version = "v1" });
             });
 
-            services.AddDbContext<UserContext>(options => options
+            services.AddDbContext<BookStoreContext>(options => options
             .UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
-            services.AddIdentity<User, IdentityRole>().AddEntityFrameworkStores<UserContext>()
+            services.AddIdentity<User, IdentityRole>().AddEntityFrameworkStores<BookStoreContext>()
                 .AddDefaultTokenProviders();
             services.AddAuthentication(options =>
             {
