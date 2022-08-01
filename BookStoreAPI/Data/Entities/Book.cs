@@ -27,15 +27,13 @@ namespace BookStoreAPI.Data.Entities
         [Required]
         public int Quantity { get; set; }
 
-        [Url]
-        [Required]
         public string CoverImageURL { get; set; }
 
         [Required]
-        public double CoordinateX { get; set; }
+        public string CoordinateX { get; set; }
 
         [Required]
-        public double CoordinateY { get; set; }
+        public string CoordinateY { get; set; }
     }
 }
 
