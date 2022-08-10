@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using BookStoreAPI.Data;
 using BookStoreAPI.Data.Entities;
 using Microsoft.AspNetCore.Authorization;
+using System.Net;
 
 namespace BookStoreAPI.Controllers
 {
@@ -24,24 +25,37 @@ namespace BookStoreAPI.Controllers
         }
 
         // GET: api/Cart
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Cart>>> GetCarts()
-        {
-            return await _context.Carts.ToListAsync();
-        }
+        //[HttpGet]
+        //public async Task<ActionResult<IEnumerable<Cart>>> GetCarts()
+        //{
+        //    return await _context.Carts.ToListAsync();
+        //}
 
         // GET: api/Cart/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Cart>> GetCart(int id)
+        [HttpGet("{userId}")]
+        public async Task<ActionResult<Cart>> GetCart(string userId)
         {
-            var cart = await _context.Carts.FindAsync(id);
-
-            if (cart == null)
+            try
             {
-                return NotFound();
-            }
+                // Use Include (as JOIN) to enable Eager Loading
+                var cart = await _context.Carts
+                    .Include("Owner")
+                    .Include("ListBooks")
+                    .Include("ListBooks.CurrentBook")
+                    .Where(cart => cart.UserId == userId)
+                    .SingleOrDefaultAsync();
 
-            return cart;
+                if (cart == null)
+                {
+                    return NotFound("Cart not found.");
+                }
+
+                return cart;
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, ex.Message);
+            }
         }
 
         // PUT: api/Cart/5
