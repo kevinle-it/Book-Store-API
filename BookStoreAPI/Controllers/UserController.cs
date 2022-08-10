@@ -14,6 +14,7 @@ using BookStoreAPI.Data.Entities;
 using BookStoreAPI.Dto.User.Request;
 using System.Net;
 using BookStoreAPI.Helpers;
+using BookStoreAPI.Dto.User.Response;
 
 namespace BookStoreAPI.Controllers
 {
@@ -38,7 +39,7 @@ namespace BookStoreAPI.Controllers
         }
 
         [HttpPost("signup")]
-        public async Task<IActionResult> SignUp([FromBody] SignUpDto model)
+        public async Task<ActionResult<UserResponse>> SignUp([FromBody] SignUpDto model)
         {
             if (ModelState.IsValid)
             {
@@ -60,15 +61,16 @@ namespace BookStoreAPI.Controllers
                     if (result.Succeeded)
                     {
                         Response.Headers.Add("Authorization", JWTHelper.generateToken(user, this.config));
-                        return Ok(new
+                        return Ok(new UserResponse
                         {
-                            fullName = user.FullName,
-                            email = user.Email,
-                            phoneNumber = user.PhoneNumber,
-                            address = user.Address,
-                            city = user.City,
-                            state = user.State,
-                            postalCode = user.PostalCode
+                            Id = user.Id,
+                            FullName = user.FullName,
+                            Email = user.Email,
+                            PhoneNumber = user.PhoneNumber,
+                            Address = user.Address,
+                            City = user.City,
+                            State = user.State,
+                            PostalCode = user.PostalCode,
                         });
                     }
                     else
@@ -93,7 +95,7 @@ namespace BookStoreAPI.Controllers
         }
 
         [HttpPost("signin")]
-        public async Task<IActionResult> SignIn([FromBody] SignInDto model)
+        public async Task<ActionResult<UserResponse>> SignIn([FromBody] SignInDto model)
         {
             if (ModelState.IsValid)
             {
@@ -104,15 +106,16 @@ namespace BookStoreAPI.Controllers
                     if (passwordCheck.Succeeded)
                     {
                         Response.Headers.Add("Authorization", JWTHelper.generateToken(user, this.config));
-                        return Ok(new
+                        return Ok(new UserResponse
                         {
-                            fullName = user.FullName,
-                            email = user.Email,
-                            phoneNumber = user.PhoneNumber,
-                            address = user.Address,
-                            city = user.City,
-                            state = user.State,
-                            postalCode = user.PostalCode
+                            Id = user.Id,
+                            FullName = user.FullName,
+                            Email = user.Email,
+                            PhoneNumber = user.PhoneNumber,
+                            Address = user.Address,
+                            City = user.City,
+                            State = user.State,
+                            PostalCode = user.PostalCode,
                         });
                     }
                     else
