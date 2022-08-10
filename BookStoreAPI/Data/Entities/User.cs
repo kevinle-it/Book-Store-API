@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.Collections.Generic;
+using Microsoft.AspNetCore.Identity;
 
 namespace BookStoreAPI.Data.Entities
 {
@@ -9,5 +10,7 @@ namespace BookStoreAPI.Data.Entities
         public string City { get; set; }
         public string State { get; set; }
         public string PostalCode { get; set; }
+
+        public Cart Cart { get; set; }
     }
 }

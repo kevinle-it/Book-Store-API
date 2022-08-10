@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace BookStoreAPI.Data.Entities
@@ -34,6 +35,8 @@ namespace BookStoreAPI.Data.Entities
 
         [Required]
         public string CoordinateY { get; set; }
+
+        public ICollection<BookCart> ListCartsHaveThisBook { get; set; }
     }
 }
 
