@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.Identity;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace BookStoreAPI.Data.Entities
 {
+    [SwaggerSchema(ReadOnly = true)]
     public class User : IdentityUser
     {
         public string FullName { get; set; }
