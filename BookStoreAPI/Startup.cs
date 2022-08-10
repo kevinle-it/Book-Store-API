@@ -1,5 +1,6 @@
 using BookStoreAPI.Data;
 using BookStoreAPI.Data.Entities;
+using BookStoreAPI.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -41,6 +42,7 @@ namespace BookStoreAPI
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "BookStoreAPI", Version = "v1" });
                 c.EnableAnnotations();
+                c.SchemaFilter<SwaggerSchemaFilter>();
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     In = ParameterLocation.Header,

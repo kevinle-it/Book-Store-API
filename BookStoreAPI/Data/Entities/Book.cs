@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using BookStoreAPI.Helpers;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace BookStoreAPI.Data.Entities
 {
@@ -8,6 +10,7 @@ namespace BookStoreAPI.Data.Entities
     {
         [Key]
         [Required]
+        [SwaggerSchema(ReadOnly = true)]
         public int BookId { get; set; }
 
         [Required]
@@ -36,6 +39,7 @@ namespace BookStoreAPI.Data.Entities
         [Required]
         public string CoordinateY { get; set; }
 
+        [SwaggerExclude]
         public ICollection<BookCart> ListCartsHaveThisBook { get; set; }
     }
 }
