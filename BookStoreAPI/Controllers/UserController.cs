@@ -11,7 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Linq;
 using BookStoreAPI.Data.Entities;
-using BookStoreAPI.Dto;
+using BookStoreAPI.Dto.User.Request;
 using System.Net;
 using BookStoreAPI.Helpers;
 

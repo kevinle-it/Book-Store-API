@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace BookStoreAPI.Dto
+namespace BookStoreAPI.Dto.User.Request
 {
     public class SignInDto
     {
