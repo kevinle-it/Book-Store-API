@@ -21,7 +21,6 @@ namespace BookStoreAPI.Data.Entities
         [Required]
         public decimal TotalPrice { get; set; }
 
-        [SwaggerSchema(ReadOnly = true)]
         public ICollection<BookCart> ListBooks { get; set; }
     }
 }

@@ -23,12 +23,18 @@
     <None Remove="Helpers\" />
     <None Remove="Microsoft.AspNetCore.Mvc.NewtonsoftJson" />
     <None Remove="Swashbuckle.AspNetCore.Annotations" />
+    <None Remove="Dto\Cart\" />
+    <None Remove="Dto\Cart\Request\" />
+    <None Remove="Dto\Cart\Response\" />
     <None Remove="Dto\User\" />
     <None Remove="Dto\User\Request\" />
     <None Remove="Dto\User\Response\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Helpers\" />
+    <Folder Include="Dto\Cart\" />
+    <Folder Include="Dto\Cart\Request\" />
+    <Folder Include="Dto\Cart\Response\" />
     <Folder Include="Dto\User\" />
     <Folder Include="Dto\User\Request\" />
     <Folder Include="Dto\User\Response\" />

@@ -15,7 +15,7 @@ namespace BookStoreAPI.Helpers
         {
             var claims = new List<Claim>
                         {
-                            new Claim(JwtRegisteredClaimNames.Sub, user.Email),
+                            new Claim(JwtRegisteredClaimNames.Sub, user.Id),
                             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                             new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName)
                         };
