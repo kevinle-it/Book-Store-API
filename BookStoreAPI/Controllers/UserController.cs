@@ -15,6 +15,8 @@ using BookStoreAPI.Dto.User.Request;
 using System.Net;
 using BookStoreAPI.Helpers;
 using BookStoreAPI.Dto.User.Response;
+using BookStoreAPI.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace BookStoreAPI.Controllers
 {
@@ -26,16 +28,19 @@ namespace BookStoreAPI.Controllers
         private readonly SignInManager<User> signInManager;
         private readonly UserManager<User> userManager;
         private readonly IConfiguration config;
+        private readonly BookStoreContext _context;
 
         public UserController(ILogger<UserController> logger,
             SignInManager<User> signInManager,
             UserManager<User> userManager,
-            IConfiguration config)
+            IConfiguration config,
+            BookStoreContext context)
         {
             this.logger = logger;
             this.signInManager = signInManager;
             this.userManager = userManager;
             this.config = config;
+            this._context = context;
         }
 
         [HttpPost("signup")]
@@ -60,6 +65,15 @@ namespace BookStoreAPI.Controllers
 
                     if (result.Succeeded)
                     {
+                        try
+                        {
+                            CreateCartForCurrentUser();
+                        }
+                        catch (Exception ex)
+                        {
+                            logger.LogError(ex, "Create user cart failed!");
+                        }
+
                         Response.Headers.Add("Authorization", JWTHelper.generateToken(user, this.config));
                         return Ok(new UserResponse
                         {
@@ -130,6 +144,37 @@ namespace BookStoreAPI.Controllers
             }
 
             return BadRequest();
+        }
+
+        private async void CreateCartForCurrentUser()
+        {
+            try
+            {
+                var cart = await _context.Carts.SingleOrDefaultAsync(c => c.UserId == GetUserId());
+                if (cart == null)
+                {
+                    Cart cartToAdd = new()
+                    {
+                        UserId = GetUserId(),
+                        TotalPrice = 0,
+                    };
+                    _context.Carts.Add(cartToAdd);
+                    await _context.SaveChangesAsync();
+                }
+            }
+            catch (ArgumentNullException ex)
+            {
+                throw new ArgumentNullException(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new InvalidOperationException(ex.Message);
+            }
+        }
+
+        private string GetUserId()
+        {
+            return ((ClaimsIdentity)User.Identity).Claims.FirstOrDefault().Value;
         }
     }
 }

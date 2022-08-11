@@ -46,12 +46,12 @@ namespace BookStoreAPI.Controllers
                     .Include("Owner")
                     .Include("ListBooks")
                     .Include("ListBooks.CurrentBook")
-                    .Where(cart => cart.UserId == getUserId())
+                    .Where(cart => cart.UserId == GetUserId())
                     .SingleOrDefaultAsync();
 
                 if (cart == null)
                 {
-                    return NotFound("Cart not found.");
+                    return Ok("Cart not found.");
                 }
 
                 return MapCartToResponse(cart);
@@ -64,36 +64,36 @@ namespace BookStoreAPI.Controllers
 
         // POST: api/Cart
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<CartResponse>> PostCart([FromBody] CartDto model)
-        {
-            try
-            {
-                var cart = await _context.Carts.SingleOrDefaultAsync(c => c.UserId == getUserId());
-                if (cart == null)
-                {
-                    Cart cartToAdd = new()
-                    {
-                        UserId = getUserId(),
-                        TotalPrice = 0,
-                    };
-                    Cart addedCart = _context.Carts.Add(cartToAdd).Entity;
-                    await _context.SaveChangesAsync();
+        //[HttpPost]
+        //public async Task<ActionResult<CartResponse>> PostCart([FromBody] CartDto model)
+        //{
+        //    try
+        //    {
+        //        var cart = await _context.Carts.SingleOrDefaultAsync(c => c.UserId == GetUserId());
+        //        if (cart == null)
+        //        {
+        //            Cart cartToAdd = new()
+        //            {
+        //                UserId = GetUserId(),
+        //                TotalPrice = 0,
+        //            };
+        //            Cart addedCart = _context.Carts.Add(cartToAdd).Entity;
+        //            await _context.SaveChangesAsync();
 
-                    InsertListBooks(addedCart, model);
+        //            InsertListBooks(addedCart, model);
 
-                    return Ok(MapCartToResponse(addedCart));
-                }
-                else
-                {
-                    return StatusCode((int)HttpStatusCode.BadRequest, "Cart already exists.");
-                }
-            }
-            catch (Exception ex)
-            {
-                return StatusCode((int)HttpStatusCode.InternalServerError, ex.Message);
-            }
-        }
+        //            return Ok(MapCartToResponse(addedCart));
+        //        }
+        //        else
+        //        {
+        //            return StatusCode((int)HttpStatusCode.BadRequest, "Cart already exists.");
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode((int)HttpStatusCode.InternalServerError, ex.Message);
+        //    }
+        //}
 
         // POST: api/Cart/5/2
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
@@ -106,7 +106,7 @@ namespace BookStoreAPI.Controllers
                     .Include("Owner")
                     .Include("ListBooks")
                     .Include("ListBooks.CurrentBook")
-                    .SingleOrDefaultAsync(cart => cart.UserId == getUserId());
+                    .SingleOrDefaultAsync(cart => cart.UserId == GetUserId());
 
                 if (cart == null)
                 {
@@ -155,7 +155,7 @@ namespace BookStoreAPI.Controllers
                     .Include("Owner")
                     .Include("ListBooks")
                     .Include("ListBooks.CurrentBook")
-                    .SingleOrDefaultAsync(cart => cart.UserId == getUserId());
+                    .SingleOrDefaultAsync(cart => cart.UserId == GetUserId());
 
                 if (cart == null)
                 {
@@ -212,7 +212,7 @@ namespace BookStoreAPI.Controllers
                     .Include("Owner")
                     .Include("ListBooks")
                     .Include("ListBooks.CurrentBook")
-                    .SingleOrDefaultAsync(cart => cart.UserId == getUserId());
+                    .SingleOrDefaultAsync(cart => cart.UserId == GetUserId());
 
                 if (cart == null)
                 {
@@ -249,7 +249,7 @@ namespace BookStoreAPI.Controllers
             return _context.Carts.Any(e => e.CartId == id);
         }
 
-        private string getUserId()
+        private string GetUserId()
         {
             return ((ClaimsIdentity)User.Identity).Claims.FirstOrDefault().Value;
         }
