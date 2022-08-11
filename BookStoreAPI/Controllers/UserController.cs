@@ -67,7 +67,7 @@ namespace BookStoreAPI.Controllers
                     {
                         try
                         {
-                            CreateCartForCurrentUser();
+                            CreateCartForCurrentUser(user.Id);
                         }
                         catch (Exception ex)
                         {
@@ -146,16 +146,17 @@ namespace BookStoreAPI.Controllers
             return BadRequest();
         }
 
-        private async void CreateCartForCurrentUser()
+        private async void CreateCartForCurrentUser(string userId)
         {
             try
             {
-                var cart = await _context.Carts.SingleOrDefaultAsync(c => c.UserId == GetUserId());
+                var cart = await _context.Carts
+                    .SingleOrDefaultAsync(c => c.UserId == userId);
                 if (cart == null)
                 {
                     Cart cartToAdd = new()
                     {
-                        UserId = GetUserId(),
+                        UserId = userId,
                         TotalPrice = 0,
                     };
                     _context.Carts.Add(cartToAdd);
@@ -170,11 +171,6 @@ namespace BookStoreAPI.Controllers
             {
                 throw new InvalidOperationException(ex.Message);
             }
-        }
-
-        private string GetUserId()
-        {
-            return ((ClaimsIdentity)User.Identity).Claims.FirstOrDefault().Value;
         }
     }
 }
