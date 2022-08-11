@@ -43,9 +43,9 @@ namespace BookStoreAPI.Controllers
             {
                 // Use Include (as JOIN) to enable Eager Loading
                 var cart = await _context.Carts
-                    .Include("Owner")
-                    .Include("ListBooks")
-                    .Include("ListBooks.CurrentBook")
+                    //.Include("ListBooks.CurrentBook")
+                    //.Include("Owner")
+                    //.Include("ListBooks")
                     .Where(cart => cart.UserId == GetUserId())
                     .SingleOrDefaultAsync();
 
@@ -102,10 +102,21 @@ namespace BookStoreAPI.Controllers
         {
             try
             {
+                var validateBookAndQuantityResult = await AssertBookAndQuantityIsValid(bookId, quantity);
+
+                Book currentBook;
+                switch (validateBookAndQuantityResult)
+                {
+                    case OkObjectResult ok:
+                        currentBook = (Book)ok.Value;
+                        break;
+                    default:
+                        return validateBookAndQuantityResult;
+                }
+
                 var cart = await _context.Carts
-                    .Include("Owner")
+                    //.Include("Owner")
                     .Include("ListBooks")
-                    .Include("ListBooks.CurrentBook")
                     .SingleOrDefaultAsync(cart => cart.UserId == GetUserId());
 
                 if (cart == null)
@@ -114,12 +125,13 @@ namespace BookStoreAPI.Controllers
                 }
 
                 var bookCart = cart
-                            .ListBooks
+                            ?.ListBooks
                             .SingleOrDefault(lb => lb.BookId == bookId);
 
                 if (bookCart != null)
                 {
-                    return BadRequest("Book already exists in current cart. Update the book quantity instead.");
+                    return BadRequest("Book already exists in current cart. " +
+                        "Cannot add as new one. Update the book quantity instead.");
                 }
 
                 bookCart = new BookCart
@@ -127,13 +139,14 @@ namespace BookStoreAPI.Controllers
                     CartId = cart.CartId,
                     BookId = bookId,
                     Quantity = quantity,
-                    Subtotal = (decimal)(bookCart.CurrentBook.Price * quantity),
+                    Subtotal = (decimal)(currentBook.Price * quantity),
                 };
 
                 _context.BookCarts.Add(bookCart);
 
                 cart.TotalPrice += bookCart.Subtotal;
                 _context.Entry(cart).State = EntityState.Modified;
+
                 await _context.SaveChangesAsync();
 
                 return Ok(MapCartToResponse(cart));
@@ -147,14 +160,25 @@ namespace BookStoreAPI.Controllers
         // PUT: api/Cart/5/2
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{bookId}/{quantity}")]
-        public async Task<ActionResult<CartResponse>> PutBookInCart(int bookId, int quantity)
+        public async Task<ActionResult<CartResponse>> PutBookIntoCart(int bookId, int quantity)
         {
             try
             {
+                var validateBookAndQuantityResult = await AssertBookAndQuantityIsValid(bookId, quantity);
+
+                Book currentBook;
+                switch (validateBookAndQuantityResult)
+                {
+                    case OkObjectResult ok:
+                        currentBook = (Book)ok.Value;
+                        break;
+                    default:
+                        return validateBookAndQuantityResult;
+                }
+
                 var cart = await _context.Carts
-                    .Include("Owner")
+                    //.Include("Owner")
                     .Include("ListBooks")
-                    .Include("ListBooks.CurrentBook")
                     .SingleOrDefaultAsync(cart => cart.UserId == GetUserId());
 
                 if (cart == null)
@@ -163,7 +187,7 @@ namespace BookStoreAPI.Controllers
                 }
 
                 var bookCart = cart
-                        .ListBooks
+                        ?.ListBooks
                         .SingleOrDefault(lb => lb.BookId == bookId);
 
                 if (bookCart == null)
@@ -173,13 +197,10 @@ namespace BookStoreAPI.Controllers
 
                 var oldQuantity = bookCart.Quantity;
                 bookCart.Quantity = quantity;
-                bookCart.Subtotal = (decimal)(bookCart.CurrentBook.Price * quantity);
-
-                _context.Entry(bookCart).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
+                bookCart.Subtotal = (decimal)(currentBook.Price * quantity);
 
                 int diffQuantity = Math.Abs(quantity - oldQuantity);
-                decimal diffPrice = (decimal)bookCart.CurrentBook.Price * diffQuantity;
+                decimal diffPrice = (decimal)currentBook.Price * diffQuantity;
                 if (diffQuantity > 0)
                 {
                     if (quantity < oldQuantity)
@@ -190,6 +211,8 @@ namespace BookStoreAPI.Controllers
                     {
                         cart.TotalPrice += diffPrice;
                     }
+
+                    _context.Entry(bookCart).State = EntityState.Modified;
                     _context.Entry(cart).State = EntityState.Modified;
                     await _context.SaveChangesAsync();
                 }
@@ -209,9 +232,9 @@ namespace BookStoreAPI.Controllers
             try
             {
                 var cart = await _context.Carts
-                    .Include("Owner")
+                    //.Include("Owner")
                     .Include("ListBooks")
-                    .Include("ListBooks.CurrentBook")
+                    //.Include("ListBooks.CurrentBook")
                     .SingleOrDefaultAsync(cart => cart.UserId == GetUserId());
 
                 if (cart == null)
@@ -220,7 +243,7 @@ namespace BookStoreAPI.Controllers
                 }
 
                 var bookCart = cart
-                            .ListBooks
+                            ?.ListBooks
                             .SingleOrDefault(lb => lb.BookId == bookId);
 
                 if (bookCart == null)
@@ -229,11 +252,10 @@ namespace BookStoreAPI.Controllers
                 }
 
                 _context.BookCarts.Remove(bookCart);
-                await _context.SaveChangesAsync();
 
                 cart.TotalPrice -= bookCart.Subtotal;
-
                 _context.Entry(cart).State = EntityState.Modified;
+
                 await _context.SaveChangesAsync();
 
                 return Ok(MapCartToResponse(cart));
@@ -244,67 +266,99 @@ namespace BookStoreAPI.Controllers
             }
         }
 
-        private bool CartExists(int id)
-        {
-            return _context.Carts.Any(e => e.CartId == id);
-        }
-
         private string GetUserId()
         {
             return ((ClaimsIdentity)User.Identity).Claims.FirstOrDefault().Value;
         }
 
-        private async void InsertListBooks(Cart addedCart, CartDto model)
+        private async Task<ActionResult> AssertBookAndQuantityIsValid(int bookId, int newQuantity)
         {
-            List<BookCart> listBooks = new();
-            foreach (var book in model.ListBooks)
+            var currentBook = await _context.Books
+                    .SingleOrDefaultAsync(b => b.BookId == bookId);
+            if (currentBook == null)
             {
-                Book existingBook = await _context.Books.SingleOrDefaultAsync(b => b.BookId == book.BookId);
-                if (existingBook != null)
-                {
-                    if (book.Quantity > existingBook.Quantity)
-                    {
-                        throw new ArgumentException(
-                                $"Requested quantity exceeded available stock " +
-                                $"of Book Title: {existingBook.Title}. " +
-                                $"Maximum quantity is: {existingBook.Quantity}"
-                            );
-                    }
-                    listBooks.Add(new BookCart
-                    {
-                        CartId = addedCart.CartId,
-                        BookId = book.BookId,
-                        Quantity = book.Quantity,
-                        Subtotal = (decimal)(existingBook.Price * book.Quantity),
-                    });
-                }
+                return NotFound("Book not found.");
             }
 
-            await _context.BookCarts.AddRangeAsync(listBooks);
-            await _context.SaveChangesAsync();
-
-            decimal totalPrice = 0;
-            listBooks.ForEach(book => totalPrice += book.Subtotal);
-
-            addedCart.TotalPrice = totalPrice;
-            _context.Entry(addedCart).State = EntityState.Modified;
-
-            try
+            var availableStock = currentBook.Quantity;
+            if (newQuantity > availableStock)
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                throw;
+                return BadRequest(
+                        $"Requested quantity exceeded available stock " +
+                        $"of Book Title: {currentBook.Title}. " +
+                        $"Maximum quantity is: {availableStock}"
+                    );
             }
 
-            // Disable Lazy Loading by explicitly load related entities into addedCart object
-            _context.Entry(addedCart).Reference(c => c.Owner).Load();
-            _context.Entry(addedCart).Collection(c => c.ListBooks).Load();
+            return Ok(currentBook);
         }
+
+        //private bool CartExists(int id)
+        //{
+        //    return _context.Carts.Any(e => e.CartId == id);
+        //}
+
+        //private async void InsertListBooks(Cart addedCart, CartDto model)
+        //{
+        //    List<BookCart> listBooks = new();
+        //    foreach (var book in model.ListBooks)
+        //    {
+        //        Book existingBook = await _context.Books.SingleOrDefaultAsync(b => b.BookId == book.BookId);
+        //        if (existingBook != null)
+        //        {
+        //            if (book.Quantity > existingBook.Quantity)
+        //            {
+        //                throw new ArgumentException(
+        //                        $"Requested quantity exceeded available stock " +
+        //                        $"of Book Title: {existingBook.Title}. " +
+        //                        $"Maximum quantity is: {existingBook.Quantity}"
+        //                    );
+        //            }
+        //            listBooks.Add(new BookCart
+        //            {
+        //                CartId = addedCart.CartId,
+        //                BookId = book.BookId,
+        //                Quantity = book.Quantity,
+        //                Subtotal = (decimal)(existingBook.Price * book.Quantity),
+        //            });
+        //        }
+        //    }
+
+        //    await _context.BookCarts.AddRangeAsync(listBooks);
+        //    await _context.SaveChangesAsync();
+
+        //    decimal totalPrice = 0;
+        //    listBooks.ForEach(book => totalPrice += book.Subtotal);
+
+        //    addedCart.TotalPrice = totalPrice;
+        //    _context.Entry(addedCart).State = EntityState.Modified;
+
+        //    try
+        //    {
+        //        await _context.SaveChangesAsync();
+        //    }
+        //    catch (DbUpdateConcurrencyException)
+        //    {
+        //        throw;
+        //    }
+
+        //    // Disable Lazy Loading by explicitly loading related entities into addedCart object
+        //    _context.Entry(addedCart).Reference(c => c.Owner).Load();
+        //    _context.Entry(addedCart).Collection(c => c.ListBooks).Load();
+        //}
 
         private CartResponse MapCartToResponse(Cart cart)
         {
+            // Disable Lazy Loading by explicitly loading related entities into cart object
+            _context.Entry(cart)
+                .Reference(c => c.Owner)
+                .Load();
+            _context.Entry(cart)
+                .Collection(c => c.ListBooks)
+                .Query()
+                .Include("CurrentBook")
+                .Load();
+
             User owner = cart.Owner;
             List<BookCart> listBooks = cart.ListBooks.ToList();
 
