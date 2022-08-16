@@ -29,6 +29,9 @@
     <None Remove="Dto\User\" />
     <None Remove="Dto\User\Request\" />
     <None Remove="Dto\User\Response\" />
+    <None Remove="Dto\Order\" />
+    <None Remove="Dto\Order\Request\" />
+    <None Remove="Dto\Order\Response\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Helpers\" />
@@ -38,5 +41,8 @@
     <Folder Include="Dto\User\" />
     <Folder Include="Dto\User\Request\" />
     <Folder Include="Dto\User\Response\" />
+    <Folder Include="Dto\Order\" />
+    <Folder Include="Dto\Order\Request\" />
+    <Folder Include="Dto\Order\Response\" />
   </ItemGroup>
 </Project>
