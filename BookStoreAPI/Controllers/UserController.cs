@@ -17,6 +17,7 @@ using BookStoreAPI.Helpers;
 using BookStoreAPI.Dto.User.Response;
 using BookStoreAPI.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BookStoreAPI.Controllers
 {
@@ -141,6 +142,77 @@ namespace BookStoreAPI.Controllers
                 {
                     return NotFound("User not exist.");
                 }
+            }
+
+            return BadRequest();
+        }
+
+        [Authorize]
+        [HttpPut]
+        public async Task<ActionResult<UserResponse>> UpdateUser([FromBody] UserDto model)
+        {
+            if (ModelState.IsValid)
+            {
+                var email = User.Identity.Name;
+                var user = await this.userManager.FindByEmailAsync(email);
+
+                if (user != null)
+                {
+                    user.FullName = model.FullName;
+                    user.Address = model.Address;
+                    user.City = model.City;
+                    user.State = model.State;
+                    user.PostalCode = model.PostalCode;
+
+                    await this.userManager.SetPhoneNumberAsync(user, model.PhoneNumber);
+                    var phoneNumberToken = await this.userManager.GenerateChangePhoneNumberTokenAsync(user, model.PhoneNumber);
+                    IdentityResult changePhoneNumberResult = await this.userManager.ChangePhoneNumberAsync(user, model.PhoneNumber, phoneNumberToken);
+
+                    if (!changePhoneNumberResult.Succeeded)
+                    {
+                        logger.LogInformation("Cannot change phone number.");
+                    }
+
+                    var emailToken = await this.userManager.GenerateChangeEmailTokenAsync(user, model.Email);
+                    IdentityResult changeEmailResult = await this.userManager.ChangeEmailAsync(user, model.Email, emailToken);
+
+                    if (changeEmailResult.Succeeded)
+                    {
+                        await this.userManager.SetUserNameAsync(user, model.Email);
+                    }
+                    else
+                    {
+                        logger.LogInformation("Cannot change email.");
+                    }
+
+                    _context.Entry(user).State = EntityState.Modified;
+
+                    try
+                    {
+                        await _context.SaveChangesAsync();
+                    }
+                    catch (DbUpdateConcurrencyException ex)
+                    {
+                        return StatusCode((int)HttpStatusCode.InternalServerError, ex.Message);
+                    }
+
+                    return Ok(new UserResponse
+                    {
+                        Id = user.Id,
+                        FullName = user.FullName,
+                        Email = user.Email,
+                        PhoneNumber = user.PhoneNumber,
+                        Address = user.Address,
+                        City = user.City,
+                        State = user.State,
+                        PostalCode = user.PostalCode,
+                    });
+                }
+                else
+                {
+                    return NotFound("User not exist.");
+                }
+
             }
 
             return BadRequest();
