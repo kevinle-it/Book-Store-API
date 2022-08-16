@@ -14,5 +14,6 @@ namespace BookStoreAPI.Data.Entities
         public string PostalCode { get; set; }
 
         public Cart Cart { get; set; }
+        public ICollection<Order> Order { get; set; }
     }
 }

@@ -41,6 +41,9 @@ namespace BookStoreAPI.Data.Entities
 
         [SwaggerExclude]
         public ICollection<BookCart> ListCartsHaveThisBook { get; set; }
+
+        [SwaggerExclude]
+        public ICollection<BookOrder> ListOrdersHaveThisBook { get; set; }
     }
 }
 
