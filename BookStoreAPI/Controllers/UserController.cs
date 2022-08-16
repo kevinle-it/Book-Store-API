@@ -147,6 +147,14 @@ namespace BookStoreAPI.Controllers
             return BadRequest();
         }
 
+        //[Authorize]
+        //[HttpPost("signout")]
+        //public async Task<ActionResult> LogOut()
+        //{
+        //    await this.signInManager.SignOutAsync();
+        //    return Ok();
+        //}
+
         [Authorize]
         [HttpPut]
         public async Task<ActionResult<UserResponse>> UpdateUser([FromBody] UserDto model)
